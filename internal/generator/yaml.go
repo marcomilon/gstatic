@@ -27,10 +27,12 @@ func (yaml Yaml) resolver() filepath.WalkFunc {
 			if err := copyFile(path, target); err != nil {
 				return err
 			}
-		} else {
-			if err := createDir(target); err != nil {
-				return err
-			}
+
+			return nil
+		}
+
+		if err := createDir(target); err != nil {
+			return err
 		}
 
 		return nil
