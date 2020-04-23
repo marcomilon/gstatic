@@ -5,5 +5,5 @@ A simple static website generator. The goal of the project is to create simple w
 ## Todo
 
 - [x] Read all file on the template folder
-- [ ] Parse a yaml files and replace variables on the template
-- [ ] Write result to a public folder
+- [x] Parse a yaml files and replace variables on the template
+- [x] Write result to a public folder

@@ -1,10 +1,14 @@
 package generator
 
 import (
+	"html/template"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Yaml is a resolver that will use a yaml file to hold the variables
@@ -24,7 +28,16 @@ func (yaml Yaml) resolver() filepath.WalkFunc {
 		target := yaml.target() + targetFile
 
 		if !info.IsDir() {
-			if err := copyFile(path, target); err != nil {
+
+			template := strings.TrimSuffix(path, filepath.Ext(path))
+			source := template + ".yaml"
+
+			if _, err := os.Stat(source); os.IsNotExist(err) {
+				return copyFile(path, target)
+			}
+
+			err := parseFile(source, target, path)
+			if err != nil {
 				return err
 			}
 
@@ -63,7 +76,6 @@ func copyFile(source string, target string) error {
 	}
 	defer sourceFile.Close()
 
-	// Create new file
 	newFile, err := os.Create(target)
 	if err != nil {
 		return err
@@ -73,6 +85,49 @@ func copyFile(source string, target string) error {
 	if _, err := io.Copy(newFile, sourceFile); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func writeFile(source []byte, target string) error {
+
+	err := ioutil.WriteFile(target, source, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func parseFile(source string, target string, tpl string) error {
+
+	data, err := ioutil.ReadFile(source)
+	if err != nil {
+		return err
+	}
+
+	m := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.ParseFiles(tpl)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(f, m)
+	if err != nil {
+		return err
+	}
+
+	f.Close()
 
 	return nil
 }
