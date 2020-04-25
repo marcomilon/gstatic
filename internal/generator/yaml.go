@@ -112,7 +112,7 @@ func parseFile(source string, target string, tpl string) error {
 		return err
 	}
 
-	tmpl, err := template.ParseFiles(tpl)
+	tmpl, err := template.ParseFiles("testdata/composition/layout/layout.html", tpl)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func parseFile(source string, target string, tpl string) error {
 		return err
 	}
 
-	err = tmpl.Execute(f, m)
+	err = tmpl.ExecuteTemplate(f, "base", m)
 	if err != nil {
 		return err
 	}
