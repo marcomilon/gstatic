@@ -1,6 +1,7 @@
 # gStatic
 
-A simple static website generator. The goal of the project is to create simple website generator.
+A simple static website generator. The goal of the project is to create simple website generator. 
+gStatic uses Go’s html/template and text/template libraries as the basis for the templating.
 
 ## Todo
 
