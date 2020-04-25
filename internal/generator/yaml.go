@@ -4,12 +4,18 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 )
+
+const layoutFolder = "/layout"
+const templateExt = ".html"
+const sourceExt = ".yaml"
+const baseTemplate = "base"
 
 // Yaml is a resolver that will use a yaml file to hold the variables
 type Yaml struct {
@@ -18,10 +24,15 @@ type Yaml struct {
 }
 
 func (yaml Yaml) resolver() filepath.WalkFunc {
+
+	layouts, err := readLayouts(yaml.source() + layoutFolder)
+	if err != nil {
+		log.Printf("Warning: layouts not found, %v", err)
+	}
+
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
-
 		}
 
 		targetFile := strings.Replace(path, yaml.source(), "", 1)
@@ -30,15 +41,17 @@ func (yaml Yaml) resolver() filepath.WalkFunc {
 		if !info.IsDir() {
 
 			template := strings.TrimSuffix(path, filepath.Ext(path))
-			source := template + ".yaml"
+			source := template + sourceExt
 
 			if _, err := os.Stat(source); os.IsNotExist(err) {
 				return copyFile(path, target)
 			}
 
-			err := parseFile(source, target, path)
-			if err != nil {
-				return err
+			parseTpl := filepath.Ext(path) == templateExt && filepath.Dir(path) != yaml.source()+layoutFolder
+			if parseTpl {
+				if err := parseFile(layouts, source, target, path); err != nil {
+					return err
+				}
 			}
 
 			return nil
@@ -99,7 +112,28 @@ func writeFile(source []byte, target string) error {
 	return nil
 }
 
-func parseFile(source string, target string, tpl string) error {
+func readLayouts(path string) ([]string, error) {
+	var files []string
+
+	filesInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range filesInfo {
+		ext := filepath.Ext(file.Name())
+		if ext == templateExt {
+			files = append(files, path+"/"+file.Name())
+		}
+	}
+
+	return files, nil
+
+}
+
+func parseFile(layouts []string, source string, target string, tpl string) error {
+
+	var html []string
 
 	data, err := ioutil.ReadFile(source)
 	if err != nil {
@@ -112,22 +146,31 @@ func parseFile(source string, target string, tpl string) error {
 		return err
 	}
 
-	tmpl, err := template.ParseFiles("testdata/composition/layout/layout.html", tpl)
-	if err != nil {
-		return err
-	}
-
 	f, err := os.Create(target)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	err = tmpl.ExecuteTemplate(f, "base", m)
+	if len(layouts) > 0 {
+		html = append(layouts, tpl)
+	} else {
+		html = append(html, tpl)
+	}
+
+	tmpl, err := template.ParseFiles(html...)
 	if err != nil {
 		return err
 	}
 
-	f.Close()
+	if len(layouts) > 0 {
+		err = tmpl.ExecuteTemplate(f, baseTemplate, m)
+	} else {
+		err = tmpl.Execute(f, m)
+	}
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
