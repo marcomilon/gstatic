@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/marcomilon/gstatic/internal/datasource"
 	"github.com/marcomilon/gstatic/internal/generator"
 )
 
@@ -17,8 +18,11 @@ func TestFileGenerator(t *testing.T) {
 
 	setup(t)
 
-	yaml := generator.Yaml{"testdata/basic", out}
-	err := generator.Generate(yaml)
+	ds := datasource.Yaml{}
+
+	yamlGen := generator.Generator{ds}
+
+	err := yamlGen.Generate("testdata/basic", out)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
@@ -38,8 +42,11 @@ func TestYamlParser(t *testing.T) {
 
 	setup(t)
 
-	yaml := generator.Yaml{"testdata/basic", out}
-	err := generator.Generate(yaml)
+	ds := datasource.Yaml{}
+
+	yamlGen := generator.Generator{ds}
+
+	err := yamlGen.Generate("testdata/basic", out)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
@@ -73,8 +80,11 @@ func TestCompositionGenerator(t *testing.T) {
 
 	setup(t)
 
-	yaml := generator.Yaml{"testdata/composition", out}
-	err := generator.Generate(yaml)
+	ds := datasource.Yaml{}
+
+	yamlGen := generator.Generator{ds}
+
+	err := yamlGen.Generate("testdata/composition", out)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
