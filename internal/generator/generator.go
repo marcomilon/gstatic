@@ -64,6 +64,10 @@ func (g Generator) resolver(source string, target string) filepath.WalkFunc {
 
 func (g Generator) parseFile(layouts []string, path, source, target string) error {
 
+	if filepath.Dir(path) == source+layoutFolder {
+		return nil
+	}
+
 	var html []string
 
 	m, err := g.VarReader.GetVarsForTpl(path)
