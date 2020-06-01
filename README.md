@@ -8,7 +8,7 @@ gStatic uses Go’s html/template and text/template libraries as the basis for t
 - [x] Read all file on the template folder
 - [x] Parse a yaml files and replace variables on the template
 - [x] Write result to a public folder
-- [ ] Add support for layouts
+- [x] Add support for layouts
 - [ ] Improve error handling
 - [ ] Add configuration
 - [ ] Add documentation on how to do templates
