@@ -1,14 +1,10 @@
 package generator
 
 import (
-	"fmt"
-	"html/template"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"github.com/marcomilon/gstatic/internal/helpers"
+	"text/template"
 )
 
 // Generator is the main struct. It use a VarReader to extract variables from a data source
@@ -17,10 +13,10 @@ type Generator struct {
 }
 
 // Generate is the main method used to generate a site
-func (g Generator) Generate(source string, target string) error {
-	resolver := g.resolver(source, target)
+func (g Generator) Generate(srcFolder string, targetFolder string) error {
+	resolver := g.resolver(srcFolder, targetFolder)
 
-	err := filepath.Walk(source, resolver)
+	err := filepath.Walk(srcFolder, resolver)
 	if err != nil {
 		log.Println(err)
 	}
@@ -28,79 +24,59 @@ func (g Generator) Generate(source string, target string) error {
 	return err
 }
 
-func (g Generator) resolver(source string, target string) filepath.WalkFunc {
+func (g Generator) resolver(srcFolder string, targetFolder string) filepath.WalkFunc {
 
-	layouts, err := helpers.ReadLayouts(source + layoutFolder)
-	if err != nil {
-		log.Printf("Warning: layouts not found, %v", err)
+	// layouts, err := helpers.ReadLayouts(srcFolder + layoutFolder)
+	// if err != nil {
+	// 	log.Printf("Warning: layouts not found, %v", err)
+	// }
+
+	var useLayout bool = false
+	var layout string = srcFolder + string(os.PathSeparator) + "layout" + string(os.PathSeparator) + "layout.html"
+	log.Printf("layout file %v", layout)
+
+	if _, err := os.Stat(layout); err == nil {
+		useLayout = true
 	}
 
 	return func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+
+		if info.IsDir() {
+			return mkdir(srcFolder, targetFolder, path)
 		}
 
-		if !info.IsDir() {
-
-			if filepath.Ext(path) != templateExt {
-				return nil
+		ext := filepath.Ext(path)
+		if ext == ".html" {
+			targetFilename := getTargetDirname(srcFolder, path)
+			if useLayout {
+				return g.parseFileWithLayout(path, targetFolder+string(os.PathSeparator)+targetFilename, layout)
 			}
-
-			if err := g.parseFile(layouts, path, source, target); err != nil {
-				return err
-			}
-
-			return nil
+			return g.parseFile(path, targetFolder+string(os.PathSeparator)+targetFilename)
 		}
 
-		targetFolder := target + removeSourceFromTemplatePath(path, source)
-		if err := helpers.CreateDir(targetFolder); err != nil {
-			return err
-		}
-
-		return nil
+		targetAssetname := getTargetDirname(srcFolder, path)
+		log.Printf("Copy asset %v", targetFolder+string(os.PathSeparator)+targetAssetname)
+		return copyAsset(path, targetFolder+string(os.PathSeparator)+targetAssetname)
 	}
 }
 
-func (g Generator) parseFile(layouts []string, path, source, target string) error {
+func (g Generator) parseFile(path, targetFilename string) error {
 
-	if filepath.Dir(path) == source+layoutFolder {
-		return nil
-	}
-
-	var html []string
-
-	m, err := g.VarReader.GetVarsForTpl(path)
+	m, err := g.extractVariables(path)
 	if err != nil {
 		return err
 	}
 
-	templateSrc := removeSourceFromTemplatePath(path, source)
-	targetTemplate := target + templateSrc
-
-	f, err := os.Create(targetTemplate)
+	log.Printf("output targetfile %v", targetFilename)
+	f, err := os.Create(targetFilename)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
 		return err
 	}
 	defer f.Close()
 
-	if len(layouts) > 0 {
-		html = append(layouts, path)
-	} else {
-		html = append(html, path)
-	}
+	tmpl, err := template.ParseFiles(path)
 
-	tmpl, err := template.ParseFiles(html...)
-	if err != nil {
-		return err
-	}
-
-	if len(layouts) > 0 {
-		err = tmpl.ExecuteTemplate(f, baseTemplate, m)
-	} else {
-		err = tmpl.Execute(f, m)
-	}
+	err = tmpl.Execute(f, m)
 	if err != nil {
 		return err
 	}
@@ -108,6 +84,49 @@ func (g Generator) parseFile(layouts []string, path, source, target string) erro
 	return nil
 }
 
-func removeSourceFromTemplatePath(path string, source string) string {
-	return strings.Replace(path, source, "", 1)
+func (g Generator) parseFileWithLayout(path, targetFilename, layout string) error {
+
+	if path == layout {
+		log.Printf("Skiping layout file %v", targetFilename)
+		return nil
+	}
+
+	m, err := g.extractVariables(path)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("output targetfile %v", targetFilename)
+	f, err := os.Create(targetFilename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	tmpl, err := template.ParseFiles(layout, path)
+	err = tmpl.ExecuteTemplate(f, "base", m)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (g Generator) extractVariables(path string) (map[interface{}]interface{}, error) {
+	dataSource := getSourceFilename(path)
+
+	log.Printf("Read srcfile %v", dataSource)
+	r, err := os.Open(dataSource)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	m, err := g.VarReader.GetVarsForTpl(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }

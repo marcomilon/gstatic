@@ -12,3 +12,26 @@ gStatic uses Go’s html/template and text/template libraries as the basis for t
 - [ ] Improve error handling
 - [ ] Add configuration
 - [ ] Add documentation on how to do templates
+
+## Common language
+
+* Source is the folder that has all the html files.
+* Target is the folder where the website will be written.
+* Template is an Html file.
+* Data-source is a file that variables to be use inside the html files.
+
+## How gStatic finds the data-source for an Html file
+
+gStatic use one convention. 
+
+> The name of the data-source must match the name of the html file.
+
+Yaml files is the only data-source supported.
+
+Example
+
+| Template | Data-source | Result  |
+| ------------- |-------------|-----|
+| index.html | index.yaml | index.html will be rendered using variables on index.yaml |
+| aboutus.html | aboutus.yaml | aboutus.html will be rendered using variables on aboutus.yaml |
+| contactus.html | if no yaml file for contactus | contactus.html will be copied to Target as it is |

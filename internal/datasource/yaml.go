@@ -1,10 +1,9 @@
 package datasource
 
 import (
-	"path/filepath"
-	"strings"
+	"io"
+	"io/ioutil"
 
-	"github.com/marcomilon/gstatic/internal/helpers"
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,12 +11,9 @@ import (
 type Yaml struct{}
 
 // GetVarsForTpl is a implementation for VarReader. This implementatin will get variables from a Yaml file
-func (Yaml) GetVarsForTpl(tpl string) (map[interface{}]interface{}, error) {
+func (Yaml) GetVarsForTpl(r io.Reader) (map[interface{}]interface{}, error) {
 
-	sourcePath := strings.TrimSuffix(tpl, filepath.Ext(tpl))
-	dataSource := sourcePath + ".yaml"
-
-	data, err := helpers.ReadFile(dataSource)
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -30,4 +26,9 @@ func (Yaml) GetVarsForTpl(tpl string) (map[interface{}]interface{}, error) {
 
 	return m, nil
 
+}
+
+// GetDsExtension returns the file extension of the data source
+func (Yaml) GetDsExtension() string {
+	return ".yaml"
 }

@@ -12,33 +12,11 @@ import (
 	"github.com/marcomilon/gstatic/internal/generator"
 )
 
-var out string = os.TempDir() + "gstatictest/public"
+var targetFolder string = os.TempDir() + "gstatictest"
+var srcFolderBasic = "testdata/basic"
+var srcFolderComposition = "testdata/composition"
 
-func TestFileGenerator(t *testing.T) {
-
-	setup(t)
-
-	ds := datasource.Yaml{}
-
-	yamlGen := generator.Generator{ds}
-
-	err := yamlGen.Generate("testdata/basic", out)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	index := out + string(os.PathSeparator) + "index.html"
-	if _, err := os.Stat(index); err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	section := out + string(os.PathSeparator) + "/section/section.html"
-	if _, err := os.Stat(section); err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-}
-
-func TestYamlParser(t *testing.T) {
+func TestBasicGenerator(t *testing.T) {
 
 	setup(t)
 
@@ -46,12 +24,12 @@ func TestYamlParser(t *testing.T) {
 
 	yamlGen := generator.Generator{ds}
 
-	err := yamlGen.Generate("testdata/basic", out)
+	err := yamlGen.Generate(srcFolderBasic, targetFolder)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
 
-	index := out + string(os.PathSeparator) + "index.html"
+	index := targetFolder + string(os.PathSeparator) + "index.html"
 	indexTpl, err := ioutil.ReadFile(index)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
@@ -63,7 +41,7 @@ func TestYamlParser(t *testing.T) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
 	}
 
-	section := out + string(os.PathSeparator) + "/section/section.html"
+	section := targetFolder + string(os.PathSeparator) + "section/section.html"
 	sectionTpl, err := ioutil.ReadFile(section)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
@@ -84,12 +62,12 @@ func TestCompositionGenerator(t *testing.T) {
 
 	yamlGen := generator.Generator{ds}
 
-	err := yamlGen.Generate("testdata/composition", out)
+	err := yamlGen.Generate(srcFolderComposition, targetFolder)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
 
-	index := out + string(os.PathSeparator) + "index.html"
+	index := targetFolder + string(os.PathSeparator) + "index.html"
 	indexTpl, err := ioutil.ReadFile(index)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
@@ -105,7 +83,7 @@ func TestCompositionGenerator(t *testing.T) {
 
 func setup(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	files, err := filepath.Glob(filepath.Join(out, "*"))
+	files, err := filepath.Glob(filepath.Join(targetFolder, "*"))
 	if err != nil {
 		t.Fatal("Unable to setup test")
 	}
@@ -116,5 +94,6 @@ func setup(t *testing.T) {
 		}
 	}
 
-	os.Remove(out)
+	os.Remove(targetFolder)
+	os.MkdirAll(targetFolder, 0755)
 }
