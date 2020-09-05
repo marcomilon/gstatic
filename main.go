@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/marcomilon/gstatic/internal/datasource"
@@ -15,15 +14,10 @@ func main() {
 		usage()
 	}
 
-	log.Print("gStatic")
-
 	argsWithoutProg := os.Args[1:]
 
 	srcFolder := argsWithoutProg[0]
 	targetFolder := argsWithoutProg[1]
-
-	log.Printf("Using source folder: %v", srcFolder)
-	log.Printf("Using target folder: %v", targetFolder)
 
 	ds := datasource.Yaml{}
 
@@ -31,7 +25,7 @@ func main() {
 
 	err := yamlGen.Generate(srcFolder, targetFolder)
 	if err != nil {
-		log.Printf("Something went wrong: %v\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Something went wrong: %v\n", err.Error())
 	}
 }
 

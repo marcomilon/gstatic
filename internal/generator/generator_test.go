@@ -15,6 +15,7 @@ import (
 var targetFolder string = os.TempDir() + "gstatictest"
 var srcFolderBasic = "testdata/basic"
 var srcFolderComposition = "testdata/composition"
+var srcFolderStatic = "testdata/static"
 
 func TestBasicGenerator(t *testing.T) {
 
@@ -75,6 +76,33 @@ func TestCompositionGenerator(t *testing.T) {
 
 	indexResult := strings.TrimSpace(string(indexTpl))
 	indexExpected := "<main><p>Index</p></main>"
+	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
+		t.Errorf("expected %v; got %v", indexExpected, indexResult)
+	}
+
+}
+
+func TestStaticGenerator(t *testing.T) {
+
+	setup(t)
+
+	ds := datasource.Yaml{}
+
+	yamlGen := generator.Generator{ds}
+
+	err := yamlGen.Generate(srcFolderStatic, targetFolder)
+	if err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+	index := targetFolder + string(os.PathSeparator) + "index.html"
+	indexTpl, err := ioutil.ReadFile(index)
+	if err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+	indexResult := strings.TrimSpace(string(indexTpl))
+	indexExpected := "<p>static</p>"
 	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
 	}

@@ -3,7 +3,6 @@ package generator
 import (
 	"errors"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,7 +13,7 @@ func validateTargetFolder(targetFolder string) error {
 		return errors.New("targetFolder not found")
 	}
 
-	isEmpty, _ := isEmpty(targetFolder)
+	isEmpty, _ := isFolderEmpty(targetFolder)
 
 	if !isEmpty {
 		return errors.New("targetFolder is not empty")
@@ -23,7 +22,7 @@ func validateTargetFolder(targetFolder string) error {
 	return nil
 }
 
-func isEmpty(name string) (bool, error) {
+func isFolderEmpty(name string) (bool, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return false, err
@@ -45,18 +44,15 @@ func getTargetDirname(srcFolder, path string) string {
 func mkdir(srcFolder, targetFolder, path string) error {
 	targetDirname := getTargetDirname(srcFolder, path)
 	if targetDirname == "layout" {
-		log.Printf("Skiping layout directory %v", targetDirname)
 		return nil
 	}
 
-	log.Printf("Creatings target dir %v", targetFolder+string(os.PathSeparator)+targetDirname)
 	return os.MkdirAll(targetFolder+string(os.PathSeparator)+targetDirname, 0755)
 }
 
 func copyAsset(source, target string) error {
 
 	if filepath.Ext(source) == ".yaml" {
-		log.Printf("Skiping yaml file %v", source)
 		return nil
 	}
 
@@ -78,6 +74,7 @@ func copyAsset(source, target string) error {
 
 	return nil
 }
+
 func getSourceFilename(path string) string {
 	filename := filepath.Base(path)
 	extension := filepath.Ext(filename)
@@ -85,4 +82,14 @@ func getSourceFilename(path string) string {
 
 	dirname := filepath.Dir(path)
 	return dirname + string(os.PathSeparator) + sourceFilename + ".yaml"
+}
+
+func hasSourceFilename(path string) bool {
+	sourceFile := getSourceFilename(path)
+
+	if _, err := os.Stat(sourceFile); err == nil {
+		return true
+	}
+
+	return false
 }

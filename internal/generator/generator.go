@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -47,14 +46,21 @@ func (g Generator) resolver(srcFolder string, targetFolder string) filepath.Walk
 		ext := filepath.Ext(path)
 		if ext == ".html" {
 			targetFilename := getTargetDirname(srcFolder, path)
+
+			sourceFile := hasSourceFilename(path)
+			if !sourceFile {
+				return copyAsset(path, targetFolder+string(os.PathSeparator)+targetFilename)
+			}
+
 			if useLayout {
 				return g.parseFileWithLayout(path, targetFolder+string(os.PathSeparator)+targetFilename, layout)
 			}
+
 			return g.parseFile(path, targetFolder+string(os.PathSeparator)+targetFilename)
 		}
 
 		targetAssetname := getTargetDirname(srcFolder, path)
-		log.Printf("Copy asset %v", targetFolder+string(os.PathSeparator)+targetAssetname)
+
 		return copyAsset(path, targetFolder+string(os.PathSeparator)+targetAssetname)
 	}
 }
@@ -66,7 +72,6 @@ func (g Generator) parseFile(path, targetFilename string) error {
 		return err
 	}
 
-	log.Printf("output targetfile %v", targetFilename)
 	f, err := os.Create(targetFilename)
 	if err != nil {
 		return err
@@ -86,7 +91,6 @@ func (g Generator) parseFile(path, targetFilename string) error {
 func (g Generator) parseFileWithLayout(path, targetFilename, layout string) error {
 
 	if path == layout {
-		log.Printf("Skiping layout file %v", targetFilename)
 		return nil
 	}
 
@@ -95,7 +99,6 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 		return err
 	}
 
-	log.Printf("output targetfile %v", targetFilename)
 	f, err := os.Create(targetFilename)
 	if err != nil {
 		return err
@@ -115,7 +118,6 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 func (g Generator) extractVariables(path string) (map[interface{}]interface{}, error) {
 	dataSource := getSourceFilename(path)
 
-	log.Printf("Read srcfile %v", dataSource)
 	r, err := os.Open(dataSource)
 	if err != nil {
 		return nil, err

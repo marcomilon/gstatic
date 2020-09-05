@@ -63,6 +63,21 @@ func TestGetSourceFilename(t *testing.T) {
 
 }
 
+func TestHasSourceFilename(t *testing.T) {
+	path := "testdata/static/index.html"
+
+	hasSourceFile := hasSourceFilename(path)
+	if hasSourceFile {
+		t.Errorf("expected %v; got %v", false, hasSourceFile)
+	}
+
+	path2 := "testdata/basic/index.html"
+	hasSourceFile2 := hasSourceFilename(path2)
+	if !hasSourceFile2 {
+		t.Errorf("expected %v; got %v", false, hasSourceFile2)
+	}
+}
+
 func TestValidateTargetFolder(t *testing.T) {
 
 	path := "testdata/basic/"
