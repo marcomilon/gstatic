@@ -63,6 +63,16 @@ func TestGetSourceFilename(t *testing.T) {
 
 }
 
+func TestValidateTargetFolder(t *testing.T) {
+
+	path := "testdata/basic/"
+	err := validateTargetFolder(path)
+	if err == nil {
+		t.Errorf("expected %v; got %v", err, nil)
+	}
+
+}
+
 func setup(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	files, err := filepath.Glob(filepath.Join(targetFolder, "*"))

@@ -14,6 +14,12 @@ type Generator struct {
 
 // Generate is the main method used to generate a site
 func (g Generator) Generate(srcFolder string, targetFolder string) error {
+
+	err := validateTargetFolder(targetFolder)
+	if err != nil {
+		return err
+	}
+
 	resolver := g.resolver(srcFolder, targetFolder)
 
 	return filepath.Walk(srcFolder, resolver)

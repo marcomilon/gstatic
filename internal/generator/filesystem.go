@@ -9,17 +9,40 @@ import (
 	"strings"
 )
 
+func validateTargetFolder(targetFolder string) error {
+	if _, err := os.Stat(targetFolder); err != nil {
+		return errors.New("targetFolder not found")
+	}
+
+	isEmpty, _ := isEmpty(targetFolder)
+
+	if !isEmpty {
+		return errors.New("targetFolder is not empty")
+	}
+
+	return nil
+}
+
+func isEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
+}
+
 func getTargetDirname(srcFolder, path string) string {
 	s := strings.Replace(path, srcFolder, "", 1)
 	return strings.TrimLeft(s, "/")
 }
 
 func mkdir(srcFolder, targetFolder, path string) error {
-
-	if _, err := os.Stat(targetFolder); err != nil {
-		return errors.New("targetFolder not found")
-	}
-
 	targetDirname := getTargetDirname(srcFolder, path)
 	if targetDirname == "layout" {
 		log.Printf("Skiping layout directory %v", targetDirname)
