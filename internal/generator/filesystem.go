@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -14,6 +15,11 @@ func getTargetDirname(srcFolder, path string) string {
 }
 
 func mkdir(srcFolder, targetFolder, path string) error {
+
+	if _, err := os.Stat(targetFolder); err != nil {
+		return errors.New("targetFolder not found")
+	}
+
 	targetDirname := getTargetDirname(srcFolder, path)
 	if targetDirname == "layout" {
 		log.Printf("Skiping layout directory %v", targetDirname)

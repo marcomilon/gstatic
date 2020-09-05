@@ -16,30 +16,23 @@ type Generator struct {
 func (g Generator) Generate(srcFolder string, targetFolder string) error {
 	resolver := g.resolver(srcFolder, targetFolder)
 
-	err := filepath.Walk(srcFolder, resolver)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return err
+	return filepath.Walk(srcFolder, resolver)
 }
 
 func (g Generator) resolver(srcFolder string, targetFolder string) filepath.WalkFunc {
 
-	// layouts, err := helpers.ReadLayouts(srcFolder + layoutFolder)
-	// if err != nil {
-	// 	log.Printf("Warning: layouts not found, %v", err)
-	// }
-
 	var useLayout bool = false
 	var layout string = srcFolder + string(os.PathSeparator) + "layout" + string(os.PathSeparator) + "layout.html"
-	log.Printf("layout file %v", layout)
 
 	if _, err := os.Stat(layout); err == nil {
 		useLayout = true
 	}
 
 	return func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
 
 		if info.IsDir() {
 			return mkdir(srcFolder, targetFolder, path)
