@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/marcomilon/gstatic/internal/datasource"
-	"github.com/marcomilon/gstatic/internal/generator"
+	"github.com/marcomilon/gstatic/internal/gstatic"
 )
 
 func main() {
@@ -21,12 +21,13 @@ func main() {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := generator.Generator{VarReader: ds}
+	yamlGen := gstatic.Generator{VarReader: ds}
 
 	err := yamlGen.Generate(srcFolder, targetFolder)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Something went wrong: %v\n", err.Error())
 	}
+
 }
 
 func usage() {

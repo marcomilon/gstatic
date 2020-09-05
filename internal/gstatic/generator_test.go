@@ -1,4 +1,4 @@
-package generator_test
+package gstatic_test
 
 import (
 	"io/ioutil"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/marcomilon/gstatic/internal/datasource"
-	"github.com/marcomilon/gstatic/internal/generator"
+	"github.com/marcomilon/gstatic/internal/gstatic"
 )
 
 var targetFolder string = os.TempDir() + "gstatictest"
@@ -23,7 +23,7 @@ func TestBasicGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := generator.Generator{ds}
+	yamlGen := gstatic.Generator{ds}
 
 	err := yamlGen.Generate(srcFolderBasic, targetFolder)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestCompositionGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := generator.Generator{ds}
+	yamlGen := gstatic.Generator{ds}
 
 	err := yamlGen.Generate(srcFolderComposition, targetFolder)
 	if err != nil {
@@ -88,7 +88,7 @@ func TestStaticGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := generator.Generator{ds}
+	yamlGen := gstatic.Generator{ds}
 
 	err := yamlGen.Generate(srcFolderStatic, targetFolder)
 	if err != nil {
