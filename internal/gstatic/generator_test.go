@@ -23,7 +23,15 @@ func TestBasicGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := gstatic.Generator{ds}
+	config := gstatic.Config{
+		"layout/layout.html",
+		"base",
+	}
+
+	yamlGen := gstatic.Generator{
+		config,
+		ds,
+	}
 
 	err := yamlGen.Generate(srcFolderBasic, targetFolder)
 	if err != nil {
@@ -61,7 +69,15 @@ func TestCompositionGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := gstatic.Generator{ds}
+	config := gstatic.Config{
+		"layout/layout.html",
+		"base",
+	}
+
+	yamlGen := gstatic.Generator{
+		config,
+		ds,
+	}
 
 	err := yamlGen.Generate(srcFolderComposition, targetFolder)
 	if err != nil {
@@ -88,7 +104,15 @@ func TestStaticGenerator(t *testing.T) {
 
 	ds := datasource.Yaml{}
 
-	yamlGen := gstatic.Generator{ds}
+	config := gstatic.Config{
+		"layout/layout.html",
+		"base",
+	}
+
+	yamlGen := gstatic.Generator{
+		config,
+		ds,
+	}
 
 	err := yamlGen.Generate(srcFolderStatic, targetFolder)
 	if err != nil {

@@ -7,3 +7,9 @@ type VarReader interface {
 	GetVarsForTpl(r io.Reader) (map[interface{}]interface{}, error)
 	GetDsExtension() string
 }
+
+// Config the structs holds config settings
+type Config struct {
+	Layout string
+	Base   string
+}

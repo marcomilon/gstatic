@@ -8,6 +8,7 @@ import (
 
 // Generator is the main struct. It use a VarReader to extract variables from a data source
 type Generator struct {
+	Config    Config
 	VarReader VarReader
 }
 
@@ -27,7 +28,7 @@ func (g Generator) Generate(srcFolder string, targetFolder string) error {
 func (g Generator) resolver(srcFolder string, targetFolder string) filepath.WalkFunc {
 
 	var useLayout bool = false
-	var layout string = srcFolder + string(os.PathSeparator) + "layout" + string(os.PathSeparator) + "layout.html"
+	var layout string = srcFolder + string(os.PathSeparator) + g.Config.Layout
 
 	if _, err := os.Stat(layout); err == nil {
 		useLayout = true
@@ -106,7 +107,7 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 	defer f.Close()
 
 	tmpl, err := template.ParseFiles(layout, path)
-	err = tmpl.ExecuteTemplate(f, "base", m)
+	err = tmpl.ExecuteTemplate(f, g.Config.Base, m)
 	if err != nil {
 		return err
 	}
