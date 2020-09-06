@@ -20,12 +20,12 @@ test:
 	go test -cover ./...
 
 build-macos: 
-	GOOS=darwin $(GOBUILD) -o main.go -o $(RELEASEDIR)/macos/gstatic
+	GOOS=darwin $(GOBUILD) -o main.go -o $(RELEASEDIR)/gstatic_macos
 
 build-linux:
-	GOOS=linux $(GOBUILD) -o main.go -o $(RELEASEDIR)/linux/gstatic
+	GOOS=linux $(GOBUILD) -o main.go -o $(RELEASEDIR)/gstatic_linux
 	
 build-win: setup
-	GOOS=windows GOARCH=386 $(GOBUILD) -o main.go -o $(RELEASEDIR)/win/gstatic.exe
+	GOOS=windows GOARCH=386 $(GOBUILD) -o main.go -o $(RELEASEDIR)/gstatic.exe
 	
 release: clean build-linux build-win build-macos
