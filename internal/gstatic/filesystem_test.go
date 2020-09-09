@@ -56,9 +56,35 @@ func TestGetSourceFilename(t *testing.T) {
 	path := "testdata/basic/index.html"
 	expected := "testdata/basic/index.yaml"
 
-	sourceFilename := getSourceFilename(path)
+	sourceFilename := getSourceFilename(path, ".yaml")
 	if sourceFilename != expected {
 		t.Errorf("expected %v; got %v", expected, sourceFilename)
+	}
+
+}
+
+func TestMergeSourceFiles(t *testing.T) {
+
+	source1 := "testdata/source/source1.yaml"
+	source2 := "testdata/source/source2.yaml"
+	expected := `title: hello
+body: world
+footer: goodbye`
+
+	mergeSourceReader, err := mergeSourceFile(source1, source2)
+	if err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+	mergeSourceBytes, err2 := ioutil.ReadAll(mergeSourceReader)
+	if err2 != nil {
+		t.Errorf("expected %v; got %v", nil, err2)
+	}
+
+	mergeSource := string(mergeSourceBytes)
+
+	if mergeSource != expected {
+		t.Errorf("expected %v; got %v", expected, mergeSource)
 	}
 
 }
@@ -66,13 +92,13 @@ func TestGetSourceFilename(t *testing.T) {
 func TestHasSourceFilename(t *testing.T) {
 	path := "testdata/static/index.html"
 
-	hasSourceFile := hasSourceFilename(path)
+	hasSourceFile := hasSourceFilename(path, ".yaml")
 	if hasSourceFile {
 		t.Errorf("expected %v; got %v", false, hasSourceFile)
 	}
 
 	path2 := "testdata/basic/index.html"
-	hasSourceFile2 := hasSourceFilename(path2)
+	hasSourceFile2 := hasSourceFilename(path2, ".yaml")
 	if !hasSourceFile2 {
 		t.Errorf("expected %v; got %v", false, hasSourceFile2)
 	}

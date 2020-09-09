@@ -12,6 +12,10 @@ type Generator struct {
 	VarReader VarReader
 }
 
+var (
+	tplExtension = ".html"
+)
+
 // Generate is the main method used to generate a site
 func (g Generator) Generate(srcFolder string, targetFolder string) error {
 
@@ -45,10 +49,10 @@ func (g Generator) resolver(srcFolder string, targetFolder string) filepath.Walk
 		}
 
 		ext := filepath.Ext(path)
-		if ext == ".html" {
+		if ext == tplExtension {
 			targetFilename := getTargetDirname(srcFolder, path)
 
-			sourceFile := hasSourceFilename(path)
+			sourceFile := hasSourceFilename(path, g.VarReader.GetDsExtension())
 			if !sourceFile {
 				return copyAsset(path, targetFolder+string(os.PathSeparator)+targetFilename)
 			}
@@ -117,7 +121,7 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 }
 
 func (g Generator) extractVariables(path string) (map[interface{}]interface{}, error) {
-	dataSource := getSourceFilename(path)
+	dataSource := getSourceFilename(path, g.VarReader.GetDsExtension())
 
 	r, err := os.Open(dataSource)
 	if err != nil {

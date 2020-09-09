@@ -3,6 +3,7 @@ package gstatic
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,21 +76,39 @@ func copyAsset(source, target string) error {
 	return nil
 }
 
-func getSourceFilename(path string) string {
+func getSourceFilename(path, sourceFileextension string) string {
 	filename := filepath.Base(path)
 	extension := filepath.Ext(filename)
 	sourceFilename := filename[0 : len(filename)-len(extension)]
 
 	dirname := filepath.Dir(path)
-	return dirname + string(os.PathSeparator) + sourceFilename + ".yaml"
+	return dirname + string(os.PathSeparator) + sourceFilename + sourceFileextension
 }
 
-func hasSourceFilename(path string) bool {
-	sourceFile := getSourceFilename(path)
+func hasSourceFilename(path, extension string) bool {
+	sourceFile := getSourceFilename(path, extension)
 
 	if _, err := os.Stat(sourceFile); err == nil {
 		return true
 	}
 
 	return false
+}
+
+func mergeSourceFile(path1, path2 string) (io.Reader, error) {
+
+	content1, err := ioutil.ReadFile(path1)
+	if err != nil {
+		return nil, err
+	}
+
+	content2, err := ioutil.ReadFile(path2)
+	if err != nil {
+		return nil, err
+	}
+
+	mergeContent := string(content1) + "\n" + string(content2)
+
+	return strings.NewReader(mergeContent), nil
+
 }
