@@ -91,7 +91,7 @@ func TestCompositionGenerator(t *testing.T) {
 	}
 
 	indexResult := strings.TrimSpace(string(indexTpl))
-	indexExpected := "<main><p>Index</p></main>"
+	indexExpected := "<h1>Hello world</h1><main><p>Index</p></main>"
 	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
 	}
