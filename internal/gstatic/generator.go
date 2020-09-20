@@ -1,6 +1,7 @@
 package gstatic
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -72,7 +73,15 @@ func (g Generator) resolver(srcFolder string, targetFolder string) filepath.Walk
 
 func (g Generator) parseFile(path, targetFilename string) error {
 
-	m, err := g.extractVariables(path)
+	dataSource := getSourceFilename(path, g.VarReader.GetDsExtension())
+
+	r, err := os.Open(dataSource)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	m, err := g.extractVariables(r)
 	if err != nil {
 		return err
 	}
@@ -99,7 +108,15 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 		return nil
 	}
 
-	m, err := g.extractVariables(path)
+	dataSource := getSourceFilename(path, g.VarReader.GetDsExtension())
+	layoutSource := getSourceFilename(layout, g.VarReader.GetDsExtension())
+
+	r, err := mergeSourceFile(layoutSource, dataSource)
+	if err != nil {
+		return err
+	}
+
+	m, err := g.extractVariables(r)
 	if err != nil {
 		return err
 	}
@@ -120,15 +137,7 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 
 }
 
-func (g Generator) extractVariables(path string) (map[interface{}]interface{}, error) {
-	dataSource := getSourceFilename(path, g.VarReader.GetDsExtension())
-
-	r, err := os.Open(dataSource)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-
+func (g Generator) extractVariables(r io.Reader) (map[interface{}]interface{}, error) {
 	m, err := g.VarReader.GetVarsForTpl(r)
 	if err != nil {
 		return nil, err
