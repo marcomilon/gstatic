@@ -10,6 +10,7 @@ type VarReader interface {
 
 // Config the structs holds config settings
 type Config struct {
-	Layout string
-	Base   string
+	Layout                 string
+	Base                   string
+	ForceWebSiteGeneration bool
 }

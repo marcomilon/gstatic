@@ -20,6 +20,16 @@ var dirnametests = []struct {
 
 var targetFolder string = os.TempDir() + "gstatictest"
 
+func TestCleanTargetFolder(t *testing.T) {
+
+	path := "testdata/public/"
+	err := cleanTargetFolder(path)
+	if err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+}
+
 func TestGetTargetDirname(t *testing.T) {
 
 	for _, tt := range dirnametests {

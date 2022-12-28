@@ -26,6 +26,7 @@ func TestBasicGenerator(t *testing.T) {
 	config := gstatic.Config{
 		"layout/layout.html",
 		"base",
+		false,
 	}
 
 	yamlGen := gstatic.Generator{
@@ -72,6 +73,7 @@ func TestCompositionGenerator(t *testing.T) {
 	config := gstatic.Config{
 		"layout/layout.html",
 		"base",
+		false,
 	}
 
 	yamlGen := gstatic.Generator{
@@ -107,6 +109,7 @@ func TestStaticGenerator(t *testing.T) {
 	config := gstatic.Config{
 		"layout/layout.html",
 		"base",
+		false,
 	}
 
 	yamlGen := gstatic.Generator{

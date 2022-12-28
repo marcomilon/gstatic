@@ -20,6 +20,14 @@ var (
 // Generate is the main method used to generate a site
 func (g Generator) Generate(srcFolder string, targetFolder string) error {
 
+	if g.Config.ForceWebSiteGeneration {
+		err := cleanTargetFolder(targetFolder)
+		if err != nil {
+			return err
+		}
+
+	}
+
 	err := validateTargetFolder(targetFolder)
 	if err != nil {
 		return err

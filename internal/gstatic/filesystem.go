@@ -9,6 +9,20 @@ import (
 	"strings"
 )
 
+func cleanTargetFolder(targetFolder string) error {
+	err := os.RemoveAll(targetFolder)
+	if err != nil {
+		return err
+	}
+
+	err = os.Mkdir(targetFolder, 0755)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func validateTargetFolder(targetFolder string) error {
 	if _, err := os.Stat(targetFolder); err != nil {
 		return errors.New("targetFolder not found")

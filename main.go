@@ -13,16 +13,18 @@ func main() {
 
 	layoutPtr := flag.String("layout", "layout/layout.html", "Path to the layout")
 	basePtr := flag.String("base", "base", "Name of the main template")
-
-	flag.Parse()
-
-	config := gstatic.Config{
-		Layout: *layoutPtr,
-		Base:   *basePtr,
-	}
+	forcePtr := flag.Bool("force", false, "Will force website generator")
 
 	if len(os.Args) < 3 {
 		usage()
+	}
+
+	flag.CommandLine.Parse(os.Args[3:])
+
+	config := gstatic.Config{
+		Layout:                 *layoutPtr,
+		Base:                   *basePtr,
+		ForceWebSiteGeneration: *forcePtr,
 	}
 
 	argsWithoutProg := os.Args[1:]
@@ -48,7 +50,7 @@ func main() {
 func usage() {
 
 	fmt.Println("Usage: gstatic <sourceFolder> <targetFolder>")
-	fmt.Println("Use -h for help")
+	flag.PrintDefaults()
 	os.Exit(1)
 
 }
