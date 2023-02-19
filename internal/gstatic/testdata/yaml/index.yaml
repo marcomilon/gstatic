@@ -1,0 +1,29 @@
+hello: Hello world
+fold_newlines: >
+  this is really a
+  single line of text
+  despite appearances
+section2:
+  title: Thank you for writing us, we will contact you as soon as possible.
+  button: Back home
+services:
+  - service 1
+  - service 2
+  - service 3
+section3:
+  title: Get a great team for your project
+  capabilities:
+    - title: UI/UX Design and UI Development
+    - title: Web Application Development
+section4:
+  title: Advantages of working with us
+  secs:
+    - title: You're in control
+      paragraph: > 
+        This is your project and we work for you.
+    - title: Outstanding Client Service
+      paragraph: > 
+        Our client service, in addition to our low development costs, is what puts us ahead of the competition. We want your interactions with our team to be productive and work with your schedule. We strive to be the best nearshore outsourcing company.
+    - title: An array of capabilities at your fingertips
+      paragraph: > 
+        We're here to complete your vision, in whatever capacity is needed. You can be confident in handing over any part of your development project to our team. 

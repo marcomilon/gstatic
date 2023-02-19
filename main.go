@@ -11,9 +11,9 @@ import (
 
 func main() {
 
-	layoutPtr := flag.String("layout", "layout/layout.html", "Path to the layout")
+	layoutPtr := flag.String("layout", "layout/layout.html", "Path to the layout in the target folder")
 	basePtr := flag.String("base", "base", "Name of the main template")
-	forcePtr := flag.Bool("force", false, "Will force website generator")
+	forcePtr := flag.Bool("force", false, "Remove all file on targetfolder and run website generator")
 
 	if len(os.Args) < 3 {
 		usage()

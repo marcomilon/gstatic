@@ -136,6 +136,35 @@ func TestStaticGenerator(t *testing.T) {
 
 }
 
+func TestYaml(t *testing.T) {
+
+	setup(t)
+
+	ds := datasource.Yaml{}
+
+	config := gstatic.Config{
+		"layout/layout.html",
+		"base",
+		false,
+	}
+
+	yamlGen := gstatic.Generator{
+		config,
+		ds,
+	}
+
+	err := yamlGen.Generate("testdata/yaml", targetFolder)
+	if err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+	index := targetFolder + string(os.PathSeparator) + "index.html"
+	if _, err := ioutil.ReadFile(index); err != nil {
+		t.Errorf("expected %v; got %v", nil, err)
+	}
+
+}
+
 func setup(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	files, err := filepath.Glob(filepath.Join(targetFolder, "*"))

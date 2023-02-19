@@ -118,6 +118,7 @@ func TestValidateTargetFolder(t *testing.T) {
 
 	path := "testdata/basic/"
 	err := validateTargetFolder(path)
+
 	if err == nil {
 		t.Errorf("expected %v; got %v", err, nil)
 	}

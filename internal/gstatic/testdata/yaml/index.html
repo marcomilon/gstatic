@@ -1,0 +1,16 @@
+<p>{{.hello}}</p>
+<p>{{.fold_newlines}}</p>
+<p>{{.section2.title}}</p>
+
+<ul>
+{{range .services}}<li>{{ . }}</li>
+{{end}}</ul>
+
+<p>{{.section3.title}}</p>
+
+<ul>
+{{range .section3.capabilities}}<li>{{ .title }}</li>
+{{end}}</ul>
+
+{{range .section4.secs}}<h1>{{ .title }}</h1>
+<p>{{ .paragraph }}</p>{{end}}
