@@ -143,7 +143,8 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 		return err
 	}
 
-	err = tmpl.ExecuteTemplate(f, g.Config.Base, m)
+	//err = tmpl.ExecuteTemplate(f, g.Config.Base, m)
+	err = tmpl.Execute(f, m)
 	if err != nil {
 		return err
 	}

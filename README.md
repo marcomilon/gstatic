@@ -1,7 +1,7 @@
 # gStatic
 
 A simple static website generator. The goal of the project is to create simple website generator. 
-gStatic uses Go’s html/template and text/template libraries as the basis for the templating.
+gStatic is powered by Go’s html/template.
 
 ## Todo
 
@@ -11,7 +11,7 @@ gStatic uses Go’s html/template and text/template libraries as the basis for t
 - [x] Add support for layouts
 - [x] Improve error handling
 - [x] Add configuration
-- [ ] Add documentation on how to do templates
+- [x] Add documentation on how to do templates
 
 ## Common language
 
@@ -35,6 +35,11 @@ Example
 | index.html | index.yaml | index.html will be rendered using variables on index.yaml |
 | aboutus.html | aboutus.yaml | aboutus.html will be rendered using variables on aboutus.yaml |
 | contactus.html | if no yaml file for contactus | contactus.html will be copied to Target as it is |
+
+## How it works?
+
+See: https://blog.gopheracademy.com/advent-2017/using-go-templates/
+and `website_example`.
 
 ## Usage
 

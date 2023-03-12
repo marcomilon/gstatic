@@ -18,3 +18,7 @@
 
 release
 website
+
+build-linux 
+build-win 
+build-macos
