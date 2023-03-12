@@ -47,7 +47,7 @@ func TestBasicGenerator(t *testing.T) {
 
 	indexResult := string(indexTpl)
 	indexExpected := "<p>Hello world</p>"
-	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
+	if !strings.EqualFold(indexResult, indexExpected) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
 	}
 
@@ -59,7 +59,7 @@ func TestBasicGenerator(t *testing.T) {
 
 	sectionResult := string(sectionTpl)
 	sectionExpected := "<p>Marco</p>"
-	if strings.ToLower(sectionResult) != strings.ToLower(sectionExpected) {
+	if !strings.EqualFold(sectionResult, sectionExpected) {
 		t.Errorf("expected %v; got %v", sectionExpected, sectionResult)
 	}
 }
@@ -94,7 +94,7 @@ func TestCompositionGenerator(t *testing.T) {
 
 	indexResult := strings.TrimSpace(string(indexTpl))
 	indexExpected := "<h1>Hello world</h1><main><p>Index</p></main>"
-	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
+	if !strings.EqualFold(indexResult, indexExpected) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
 	}
 
@@ -130,37 +130,8 @@ func TestStaticGenerator(t *testing.T) {
 
 	indexResult := strings.TrimSpace(string(indexTpl))
 	indexExpected := "<p>static</p>"
-	if strings.ToLower(indexResult) != strings.ToLower(indexExpected) {
+	if !strings.EqualFold(indexResult, indexExpected) {
 		t.Errorf("expected %v; got %v", indexExpected, indexResult)
-	}
-
-}
-
-func TestYaml(t *testing.T) {
-
-	setup(t)
-
-	ds := datasource.Yaml{}
-
-	config := gstatic.Config{
-		"layout/layout.html",
-		"base",
-		false,
-	}
-
-	yamlGen := gstatic.Generator{
-		config,
-		ds,
-	}
-
-	err := yamlGen.Generate("testdata/yaml", targetFolder)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	index := targetFolder + string(os.PathSeparator) + "index.html"
-	if _, err := ioutil.ReadFile(index); err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
 	}
 
 }

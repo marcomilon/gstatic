@@ -101,6 +101,9 @@ func (g Generator) parseFile(path, targetFilename string) error {
 	defer f.Close()
 
 	tmpl, err := template.ParseFiles(path)
+	if err != nil {
+		return err
+	}
 
 	err = tmpl.Execute(f, m)
 	if err != nil {
@@ -136,6 +139,10 @@ func (g Generator) parseFileWithLayout(path, targetFilename, layout string) erro
 	defer f.Close()
 
 	tmpl, err := template.ParseFiles(layout, path)
+	if err != nil {
+		return err
+	}
+
 	err = tmpl.ExecuteTemplate(f, g.Config.Base, m)
 	if err != nil {
 		return err
