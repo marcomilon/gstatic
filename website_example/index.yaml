@@ -1,26 +1,9 @@
-description: Website Example
-author: Mark Otto, Jacob Thornton, and Bootstrap contributors
-generator: https://github.com/marcomilon/gstatic
-title: Album example · Bootstrap v5.0
-about:
-  title: about
-  text: Add some information about the album below, the author, or any other background context. Make it a few sentences long so folks can pick up some informative tidbits. Then, link them off to some social networking sites or contact information.
-contact:
-  title: Contact
-  list:
-    - text: Follow on Twitter
-      href: #
-    - text: Like on Facebook
-      href: #
-    - text: Email me
-      href: #
-h1: Album
 main:
   title: Album example
   text: Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don’t simply skip over it entirely.
   cta1:
     text: Main call to action
-    href: #
+    href: section.html
   cta2:
     text: Secondary action
     href: #
@@ -70,14 +53,3 @@ boxes:
     view: View
     edit: Edit
     mins: 9 mins
-footer:
-  back: Back to top
-  text1: Album example is &copy; Bootstrap, but please download and customize it for yourself!
-  text2: New to Bootstrap? 
-  link1:
-    text: Visit the homepage
-    href: /
-  text3: or read our 
-  link2:
-    text: getting started guide
-    href: #
