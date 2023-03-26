@@ -1,10 +1,10 @@
 package gstatic
 
 import (
-	"html/template"
 	"io"
 	"os"
 	"path/filepath"
+	"text/template"
 )
 
 // Generator is the main struct. It use a VarReader to extract variables from a data source
