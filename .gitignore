@@ -22,3 +22,5 @@ website
 build-linux 
 build-win 
 build-macos
+
+dist

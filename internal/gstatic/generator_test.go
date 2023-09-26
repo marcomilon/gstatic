@@ -1,154 +1,33 @@
-package gstatic_test
+package gstatic
 
-import (
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
+import "testing"
 
-	"github.com/marcomilon/gstatic/internal/datasource"
-	"github.com/marcomilon/gstatic/internal/gstatic"
-)
+func TestFindLayout(t *testing.T) {
 
-var targetFolder string = os.TempDir() + "gstatictest"
-var srcFolderBasic = "testdata/basic"
-var srcFolderComposition = "testdata/composition"
-var srcFolderStatic = "testdata/static"
+	var source string
+	var layoutFile string
+	var err error
 
-func TestBasicGenerator(t *testing.T) {
+	source = "testdata/layouttpl"
 
-	setup(t)
-
-	ds := datasource.Yaml{}
-
-	config := gstatic.Config{
-		"layout/layout.html",
-		"base",
-		false,
-	}
-
-	yamlGen := gstatic.Generator{
-		config,
-		ds,
-	}
-
-	err := yamlGen.Generate(srcFolderBasic, targetFolder)
+	layoutFile, err = findLayout(source)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
 
-	index := targetFolder + string(os.PathSeparator) + "index.html"
-	indexTpl, err := ioutil.ReadFile(index)
+	if layoutFile != "testdata/layouttpl/layout/layout.html" {
+		t.Errorf("expected %v; got %v", true, layoutFile)
+	}
+
+	source = "testdata/simpletpl"
+
+	layoutFile, err = findLayout(source)
 	if err != nil {
 		t.Errorf("expected %v; got %v", nil, err)
 	}
 
-	indexResult := string(indexTpl)
-	indexExpected := "<p>Hello world</p>"
-	if !strings.EqualFold(indexResult, indexExpected) {
-		t.Errorf("expected %v; got %v", indexExpected, indexResult)
+	if layoutFile != "" {
+		t.Errorf("expected %v; got %v", "", layoutFile)
 	}
 
-	section := targetFolder + string(os.PathSeparator) + "section/section.html"
-	sectionTpl, err := ioutil.ReadFile(section)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	sectionResult := string(sectionTpl)
-	sectionExpected := "<p>Marco</p>"
-	if !strings.EqualFold(sectionResult, sectionExpected) {
-		t.Errorf("expected %v; got %v", sectionExpected, sectionResult)
-	}
-}
-
-func TestCompositionGenerator(t *testing.T) {
-
-	setup(t)
-
-	ds := datasource.Yaml{}
-
-	config := gstatic.Config{
-		"layout/layout.html",
-		"base",
-		false,
-	}
-
-	yamlGen := gstatic.Generator{
-		config,
-		ds,
-	}
-
-	err := yamlGen.Generate(srcFolderComposition, targetFolder)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	index := targetFolder + string(os.PathSeparator) + "index.html"
-	indexTpl, err := ioutil.ReadFile(index)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	indexResult := strings.TrimSpace(string(indexTpl))
-	indexExpected := "<h1>Hello world</h1><main><p>Index</p></main>"
-	if !strings.EqualFold(indexResult, indexExpected) {
-		t.Errorf("expected %v; got %v", indexExpected, indexResult)
-	}
-
-}
-
-func TestStaticGenerator(t *testing.T) {
-
-	setup(t)
-
-	ds := datasource.Yaml{}
-
-	config := gstatic.Config{
-		"layout/layout.html",
-		"base",
-		false,
-	}
-
-	yamlGen := gstatic.Generator{
-		config,
-		ds,
-	}
-
-	err := yamlGen.Generate(srcFolderStatic, targetFolder)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	index := targetFolder + string(os.PathSeparator) + "index.html"
-	indexTpl, err := ioutil.ReadFile(index)
-	if err != nil {
-		t.Errorf("expected %v; got %v", nil, err)
-	}
-
-	indexResult := strings.TrimSpace(string(indexTpl))
-	indexExpected := "<p>static</p>"
-	if !strings.EqualFold(indexResult, indexExpected) {
-		t.Errorf("expected %v; got %v", indexExpected, indexResult)
-	}
-
-}
-
-func setup(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	files, err := filepath.Glob(filepath.Join(targetFolder, "*"))
-	if err != nil {
-		t.Fatal("Unable to setup test")
-	}
-	for _, file := range files {
-		err = os.RemoveAll(file)
-		if err != nil {
-			t.Fatal("Unable to setup test")
-		}
-	}
-
-	os.Remove(targetFolder)
-	os.MkdirAll(targetFolder, 0755)
 }
