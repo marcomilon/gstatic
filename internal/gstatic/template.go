@@ -3,13 +3,10 @@ package gstatic
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-
-	"github.com/marcomilon/gstatic/internal/datasource"
 )
 
 type gstaticSimpleTpl struct {
@@ -35,7 +32,6 @@ func (tpl gstaticLayoutTpl) render() error {
 
 	variables, err := extractVariables(variablesFile)
 	if err != nil {
-		log.Printf("%s: %v\n", "gstaticLayoutTpl unable to extract variables", err)
 		return fmt.Errorf("[%s] %v", "render", err)
 	}
 
@@ -84,22 +80,25 @@ func parse(sourcePath []string, targetPath string, variables map[interface{}]int
 }
 
 func extractVariables(source io.Reader) (map[interface{}]interface{}, error) {
-	ds := datasource.Yaml{}
-	m, err := ds.GetVarsForTpl(source)
+
+	m, err := getVarsForTpl(source)
 	if err != nil {
 		return nil, fmt.Errorf("[%s] %v", "extractVariables", err)
 	}
 
 	return m, nil
+
 }
 
 func getSourceFilename(path string) string {
+
 	filename := filepath.Base(path)
 	extension := filepath.Ext(filename)
 	sourceFilename := filename[0 : len(filename)-len(extension)]
 
 	dirname := filepath.Dir(path)
 	return dirname + string(os.PathSeparator) + sourceFilename + ".yaml"
+
 }
 
 func mergeFiles(path1, path2 string) (io.Reader, error) {
