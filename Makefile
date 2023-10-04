@@ -14,7 +14,7 @@ setup:
 clean:
 	$(GOCLEAN)
 	rm -rf $(RELEASEDIR)
-	rm -rf website
+	rm -rf dist
 	
 test:
 	go test -cover ./...
