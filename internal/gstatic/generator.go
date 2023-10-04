@@ -5,12 +5,41 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type generator struct {
 	layoutPath string
 	sourcePath string
 	targetPath string
+}
+
+type task struct {
+	generator  generator
+	targetPath string
+}
+
+type copyFileWorker task
+type layoutRenderWorker task
+type simpleRenderWorker task
+
+func (copyFileWorker copyFileWorker) execute() error {
+	targetAssetname := getTargetDirname(copyFileWorker.generator.sourcePath, copyFileWorker.targetPath)
+	targetFile := filepath.Join(copyFileWorker.generator.targetPath, targetAssetname)
+
+	return copyFile(copyFileWorker.targetPath, targetFile)
+}
+
+func (layoutRenderWorker layoutRenderWorker) execute() error {
+	targetAssetname := getTargetDirname(layoutRenderWorker.generator.sourcePath, layoutRenderWorker.targetPath)
+	targetFile := filepath.Join(layoutRenderWorker.generator.targetPath, targetAssetname)
+	tpl := gstaticLayoutTpl{layoutRenderWorker.generator.layoutPath, layoutRenderWorker.targetPath, targetFile}
+	return tpl.render()
+}
+
+func (simpleRenderWorker simpleRenderWorker) execute() error {
+	tpl := gstaticSimpleTpl{simpleRenderWorker.generator.sourcePath, simpleRenderWorker.generator.targetPath}
+	return tpl.render()
 }
 
 func findLayout(sourcePath string) (string, error) {
@@ -31,6 +60,8 @@ func findLayout(sourcePath string) (string, error) {
 
 func Generate(srcFolder string, targetFolder string) error {
 
+	var wg sync.WaitGroup
+
 	layoutFile, err := findLayout(srcFolder)
 	if err != nil {
 		return fmt.Errorf("[%s] %v", "generate", err)
@@ -38,12 +69,16 @@ func Generate(srcFolder string, targetFolder string) error {
 
 	generator := generator{layoutFile, srcFolder, targetFolder}
 
-	resolver := resolver(generator)
+	resolver := resolver(generator, &wg)
 
-	return filepath.Walk(srcFolder, resolver)
+	err = filepath.Walk(srcFolder, resolver)
+	wg.Wait()
+
+	return err
+
 }
 
-func resolver(generator generator) filepath.WalkFunc {
+func resolver(generator generator, wg *sync.WaitGroup) filepath.WalkFunc {
 
 	useLayout := generator.layoutPath != ""
 
@@ -83,22 +118,36 @@ func resolver(generator generator) filepath.WalkFunc {
 
 			if useLayout {
 
-				targetAssetname := getTargetDirname(generator.sourcePath, path)
-				targetFile := filepath.Join(generator.targetPath, targetAssetname)
-				tpl := gstaticLayoutTpl{generator.layoutPath, path, targetFile}
-				return tpl.render()
+				go func() {
+					defer wg.Done()
+					wg.Add(1)
+					identifier := fmt.Sprintf("layoutRenderWorker: %s", path)
+					executor(identifier, layoutRenderWorker{generator, path}, false)
+				}()
+
+				return nil
 
 			}
 
-			tpl := gstaticSimpleTpl{generator.sourcePath, generator.targetPath}
-			return tpl.render()
+			go func() {
+				defer wg.Done()
+				wg.Add(1)
+				identifier := fmt.Sprintf("simpleRenderWorker: %s", path)
+				executor(identifier, simpleRenderWorker{generator, path}, false)
+			}()
+
+			return nil
 
 		}
 
-		targetAssetname := getTargetDirname(generator.sourcePath, path)
-		targetFile := filepath.Join(generator.targetPath, targetAssetname)
+		go func() {
+			defer wg.Done()
+			wg.Add(1)
+			identifier := fmt.Sprintf("copyFileWorker: %s", path)
+			executor(identifier, copyFileWorker{generator, path}, false)
+		}()
 
-		return copyFile(path, targetFile)
+		return nil
 
 	}
 

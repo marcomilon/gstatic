@@ -18,12 +18,13 @@ func main() {
 	srcFolder := argsWithoutProg[0]
 	targetFolder := argsWithoutProg[1]
 
+	elapsedTime := gstatic.StartTimer("gstatic")
 	err := gstatic.Generate(srcFolder, targetFolder)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Something went wrong: %v\n", err.Error())
 		os.Exit(1)
 	}
-
+	gstatic.EndTimer(elapsedTime)
 }
 
 func usage() {
