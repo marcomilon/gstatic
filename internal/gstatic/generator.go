@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type generator struct {
@@ -19,26 +21,24 @@ type task struct {
 	targetPath string
 }
 
-type copyFileWorker task
-type layoutRenderWorker task
-type simpleRenderWorker task
+func copyFileWorker(t task) error {
+	targetAssetname := getTargetDirname(t.generator.sourcePath, t.targetPath)
+	targetFile := filepath.Join(t.generator.targetPath, targetAssetname)
 
-func (copyFileWorker copyFileWorker) execute() error {
-	targetAssetname := getTargetDirname(copyFileWorker.generator.sourcePath, copyFileWorker.targetPath)
-	targetFile := filepath.Join(copyFileWorker.generator.targetPath, targetAssetname)
-
-	return copyFile(copyFileWorker.targetPath, targetFile)
+	return copyFile(t.targetPath, targetFile)
 }
 
-func (layoutRenderWorker layoutRenderWorker) execute() error {
-	targetAssetname := getTargetDirname(layoutRenderWorker.generator.sourcePath, layoutRenderWorker.targetPath)
-	targetFile := filepath.Join(layoutRenderWorker.generator.targetPath, targetAssetname)
-	tpl := gstaticLayoutTpl{layoutRenderWorker.generator.layoutPath, layoutRenderWorker.targetPath, targetFile}
+func layoutRenderWorker(t task) error {
+	targetAssetname := getTargetDirname(t.generator.sourcePath, t.targetPath)
+	targetFile := filepath.Join(t.generator.targetPath, targetAssetname)
+	tpl := gstaticLayoutTpl{t.generator.layoutPath, t.targetPath, targetFile}
 	return tpl.render()
 }
 
-func (simpleRenderWorker simpleRenderWorker) execute() error {
-	tpl := gstaticSimpleTpl{simpleRenderWorker.generator.sourcePath, simpleRenderWorker.generator.targetPath}
+func simpleRenderWorker(t task) error {
+	targetAssetname := getTargetDirname(t.generator.sourcePath, t.targetPath)
+	targetFile := filepath.Join(t.generator.targetPath, targetAssetname)
+	tpl := gstaticSimpleTpl{t.targetPath, targetFile}
 	return tpl.render()
 }
 
@@ -61,31 +61,37 @@ func findLayout(sourcePath string) (string, error) {
 func Generate(srcFolder string, targetFolder string) error {
 
 	var wg sync.WaitGroup
+	eg := errgroup.Group{}
 
 	layoutFile, err := findLayout(srcFolder)
 	if err != nil {
-		return fmt.Errorf("[%s] %v", "generate", err)
+		return fmt.Errorf("%v", err)
 	}
 
 	generator := generator{layoutFile, srcFolder, targetFolder}
 
-	resolver := resolver(generator, &wg)
+	resolver := resolver(generator, &wg, &eg)
 
 	err = filepath.Walk(srcFolder, resolver)
 	wg.Wait()
+
+	errGroup := eg.Wait()
+	if errGroup != nil {
+		return errGroup
+	}
 
 	return err
 
 }
 
-func resolver(generator generator, wg *sync.WaitGroup) filepath.WalkFunc {
+func resolver(generator generator, wg *sync.WaitGroup, eg *errgroup.Group) filepath.WalkFunc {
 
 	useLayout := generator.layoutPath != ""
 
 	return func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
-			return fmt.Errorf("[%s] %v", "resolver", err)
+			return fmt.Errorf("%v", err)
 		}
 
 		if path == generator.layoutPath {
@@ -114,42 +120,58 @@ func resolver(generator generator, wg *sync.WaitGroup) filepath.WalkFunc {
 			return nil
 		}
 
+		task := task{generator, path}
+
 		if ext == ".html" {
 
-			if useLayout {
+			if isTplPlainHtml(path) {
 
+				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					wg.Add(1)
-					identifier := fmt.Sprintf("layoutRenderWorker: %s", path)
-					executor(identifier, layoutRenderWorker{generator, path}, false)
+					copyFileWorker(task)
 				}()
 
 				return nil
 
 			}
 
-			go func() {
-				defer wg.Done()
+			if useLayout {
 				wg.Add(1)
-				identifier := fmt.Sprintf("simpleRenderWorker: %s", path)
-				executor(identifier, simpleRenderWorker{generator, path}, false)
-			}()
+				go func() {
+					defer wg.Done()
+					layoutRenderWorker(task)
+				}()
+
+				return nil
+
+			}
+
+			eg.Go(func() error {
+				return simpleRenderWorker(task)
+			})
 
 			return nil
 
 		}
 
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			wg.Add(1)
-			identifier := fmt.Sprintf("copyFileWorker: %s", path)
-			executor(identifier, copyFileWorker{generator, path}, false)
+			copyFileWorker(task)
 		}()
 
 		return nil
 
 	}
+
+}
+
+func isTplPlainHtml(sourceFile string) bool {
+	s := strings.Replace(sourceFile, ".html", "", 1)
+	sourceFile = s + ".yaml"
+	_, err := os.Stat(sourceFile)
+	return os.IsNotExist(err)
 
 }
 
