@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -60,7 +59,6 @@ func findLayout(sourcePath string) (string, error) {
 
 func Generate(srcFolder string, targetFolder string) error {
 
-	var wg sync.WaitGroup
 	eg := errgroup.Group{}
 
 	layoutFile, err := findLayout(srcFolder)
@@ -70,10 +68,9 @@ func Generate(srcFolder string, targetFolder string) error {
 
 	generator := generator{layoutFile, srcFolder, targetFolder}
 
-	resolver := resolver(generator, &wg, &eg)
+	resolver := resolver(generator, &eg)
 
 	err = filepath.Walk(srcFolder, resolver)
-	wg.Wait()
 
 	errGroup := eg.Wait()
 	if errGroup != nil {
@@ -84,7 +81,7 @@ func Generate(srcFolder string, targetFolder string) error {
 
 }
 
-func resolver(generator generator, wg *sync.WaitGroup, eg *errgroup.Group) filepath.WalkFunc {
+func resolver(generator generator, eg *errgroup.Group) filepath.WalkFunc {
 
 	useLayout := generator.layoutPath != ""
 
@@ -126,22 +123,18 @@ func resolver(generator generator, wg *sync.WaitGroup, eg *errgroup.Group) filep
 
 			if isTplPlainHtml(path) {
 
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					copyFileWorker(task)
-				}()
+				eg.Go(func() error {
+					return copyFileWorker(task)
+				})
 
 				return nil
 
 			}
 
 			if useLayout {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					layoutRenderWorker(task)
-				}()
+				eg.Go(func() error {
+					return layoutRenderWorker(task)
+				})
 
 				return nil
 
@@ -155,11 +148,9 @@ func resolver(generator generator, wg *sync.WaitGroup, eg *errgroup.Group) filep
 
 		}
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			copyFileWorker(task)
-		}()
+		eg.Go(func() error {
+			return copyFileWorker(task)
+		})
 
 		return nil
 
